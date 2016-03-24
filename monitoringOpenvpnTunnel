@@ -1,0 +1,20 @@
+#! /bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/monitoringOpenvpnTunnel
+echo Start checking tunnel
+#suppose your host have 2 tunnels: eth0: 192.168.1.2 and eth1: 10.8.0.2 (openvpn tunnel)
+#get the host ip
+#ip address | grep '192.168.1.2' will print like this: 'inet 192.168.1.2/24 scope site dynamic'
+#awk {'print $2'} will get '192.168.1.2/24'
+#cut -d '/' will split above result by '/' character, then -f 1 will take the first element of array [192.168.1.2, 24]
+hostip= $(ip address | grep '192.168.1.2' | awk {'print $2'} | cut -d '/' -f 1)
+date_time=$(date +%s)
+#similar with get host ip, get the tunnel ip that you want to monitor
+result=$(ip -4 address | grep 10.8.0.2 | awk {'print $NF, $2'} | cut -d '/' -f 1 | tr ' ' ':')
+if [ -n "$result" ]; then
+echo "Openconnect tunnel is active, $result. At time: $(date)"
+#call API, $1 is a url that you want to call
+curl $1 -d "data={'ipAddress':'"$hostip"','openvpnTunnelIp':'"$result"','dateTime':'"$date_time"'}"
+else
+echo "Openconnect tunnel is disconnected. At time: $(date)"
+curl $1 -d "data={'ipAddress':'"$hostip"','openvpnTunnelIp':'"$result"','dateTime':'"$date_time"'}"
+fi
