@@ -1,0 +1,13 @@
+#! /bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/monitoringOpenconnectTunnel
+echo Start checking openconnect tunnel
+hostip="10.131.63.254"
+date_time=$(date +%s)
+result=$(ip -4 address | grep 172.20 | awk {'print $NF, $2'} | cut -d '/' -f 1 | tr ' ' ':')
+if [ -n "$result" ]; then
+echo "Openconnect tunnel is active, $result. At time: $(date)"
+curl $1 -d "data={'ipAddress':'"$hostip"','anyConnectTunnelIp':'"$result"','dateTime':'"$date_time"'}"
+else
+echo "Openconnect tunnel is disconnected. At time: $(date)"
+curl $1 -d "data={'ipAddress':'"$hostip"','anyConnectTunnelIp':'"$result"','dateTime':'"$date_time"'}"
+fi
